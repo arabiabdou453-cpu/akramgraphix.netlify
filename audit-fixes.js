@@ -110,16 +110,19 @@
       element.setAttribute("aria-hidden", "true");
     });
 
-    document.querySelectorAll('[data-framer-name="Desktop - Close"],[data-framer-name="Desktop - Open"]').forEach((element) => {
+    document.querySelectorAll('[tabindex="0"][data-framer-name$=" - Close"],[tabindex="0"][data-framer-name$=" - Open"]').forEach((element) => {
+      const question = element.querySelector("h3");
+      if (!question) return;
       element.setAttribute("role", "button");
-      element.setAttribute("aria-expanded", element.getAttribute("data-framer-name") === "Desktop - Open" ? "true" : "false");
-      if (!element.getAttribute("aria-label")) element.setAttribute("aria-label", "Toggle FAQ answer");
+      element.setAttribute("aria-expanded", element.getAttribute("data-framer-name")?.endsWith(" - Open") ? "true" : "false");
+      element.setAttribute("aria-label", (question.textContent || "Toggle FAQ answer").trim());
     });
 
-    document.querySelectorAll('[data-framer-name="Desktop"][tabindex="0"]').forEach((element) => {
+    document.querySelectorAll('[data-framer-name][tabindex="0"]').forEach((element) => {
       if ((element.textContent || "").includes("Click to see my bio")) {
-        element.setAttribute("role", "button");
-        element.setAttribute("aria-label", "Open biography");
+        element.removeAttribute("role");
+        element.removeAttribute("aria-label");
+        element.removeAttribute("tabindex");
       }
     });
   };
@@ -163,7 +166,9 @@
       image.decoding = "async";
 
       const rect = image.getBoundingClientRect();
-      const nearInitialViewport = visible && rect.bottom >= 0 && rect.top < window.innerHeight * 1.5;
+      const intersectsViewportHorizontally = rect.right > 0 && rect.left < window.innerWidth;
+      const nearInitialViewport = visible && intersectsViewportHorizontally &&
+        rect.bottom >= 0 && rect.top < window.innerHeight * 1.5;
 
       if (nearInitialViewport) {
         image.loading = "eager";
@@ -192,6 +197,20 @@
   };
 
   const normalizeHeadings = () => {
+    const projectPage = window.location.pathname.includes("/projects/");
+    if (projectPage && !document.querySelector(".audit-project-h1")) {
+      const main = document.querySelector("main") || document.querySelector("#main");
+      const visibleTitle = [...document.querySelectorAll("h5")].find(
+        (heading) => heading.getClientRects().length > 0 && (heading.textContent || "").trim(),
+      );
+      if (main && visibleTitle) {
+        const heading = document.createElement("h1");
+        heading.className = "audit-project-h1";
+        heading.textContent = (visibleTitle.textContent || "").trim();
+        main.prepend(heading);
+      }
+    }
+
     document.querySelectorAll("h4").forEach((heading) => {
       if ((heading.textContent || "").trim().startsWith("Step N°")) {
         const replacement = document.createElement("h3");
@@ -223,34 +242,37 @@
       if (text.includes("Copyright 2025")) {
         element.textContent = text.replace("Copyright 2025", "Copyright 2026");
       }
+      if (text === "Click to see my bio") {
+        element.textContent = "View my work below";
+      }
     });
   };
 
   const normalizeSeo = () => {
     const projectSeo = {
-      "avure-skincare.html": [
+      "avure-skincare": [
         "Avure Skincare | Complete Brand Partnership | Akram Marref",
         "A complete skincare brand partnership covering visual identity, premium art direction, packaging, and campaign design for Avure.",
       ],
-      "formura-labs-full-branding.html": [
+      "formura-labs-full-branding": [
         "Formura Labs | Full Branding | Akram Marref",
         "Brand identity and visual system for Formura Labs, created to give an Algerian supplement company a modern and credible market presence.",
       ],
-      "logofolio.html": [
+      "logofolio": [
         "LOGOFOLIO | Logos & Marks Collection | Akram Marref",
         "A curated collection of logo marks and identity explorations by Akram Marref, demonstrating clarity, versatility, and visual craft.",
       ],
-      "perfumes-media-posts.html": [
+      "perfumes-media-posts": [
         "Perfumes | Social Media Posts | Akram Marref",
         "A perfume social media poster series exploring product storytelling, atmosphere, typography, and premium visual art direction.",
       ],
-      "timeplus.html": [
+      "timeplus": [
         "TimePlus | Logo & Visual Identity | Akram Marref",
         "Logo and visual identity design for TimePlus, creating a streamlined and trustworthy presence for a modern HR and payroll platform.",
       ],
     };
-    const page = window.location.pathname.split("/").pop() || "index.html";
-    const home = page === "" || page === "index.html";
+    const page = (window.location.pathname.split("/").pop() || "index").replace(/\.html$/u, "");
+    const home = page === "" || page === "index";
     const [title, description] = home
       ? [
           "Art Director & Graphic Designer in Doha | Akram Marref",
@@ -299,11 +321,19 @@
       const observer = new MutationObserver((mutations) => {
         const structureChanged = mutations.some(
           (mutation) =>
+            mutation.type === "attributes" ||
             mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0,
         );
         if (structureChanged) scheduleInit();
       });
-      observer.observe(root, { childList: true, subtree: true });
+      observer.observe(root, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["data-framer-name"],
+      });
+      window.addEventListener("resize", scheduleInit, { passive: true });
+      window.setTimeout(init, 3500);
     }, 1500);
   };
 
