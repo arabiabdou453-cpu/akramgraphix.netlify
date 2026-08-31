@@ -8,16 +8,19 @@
   };
 
   const preserveProjectReturnPosition = () => {
-    const storageKey = "audit-return-scroll:" + window.location.pathname;
+    const storageKey = "audit-project-return-position";
     const restorePosition = () => {
       try {
-        const currentKey = "audit-return-scroll:" + window.location.pathname;
-        const saved = sessionStorage.getItem(currentKey);
-        if (saved === null) return;
-        const position = Number(saved);
-        if (!Number.isFinite(position)) return;
-        window.requestAnimationFrame(() => {
-          window.setTimeout(() => window.scrollTo({ top: position, behavior: "instant" }), 50);
+        const raw = sessionStorage.getItem(storageKey);
+        if (raw === null) return;
+        const saved = JSON.parse(raw);
+        if (saved.pathname !== window.location.pathname || !Number.isFinite(saved.scrollY)) return;
+
+        [0, 100, 300, 700, 1200].forEach((delay, index, delays) => {
+          window.setTimeout(() => {
+            window.scrollTo({ top: saved.scrollY, behavior: "instant" });
+            if (index === delays.length - 1) sessionStorage.removeItem(storageKey);
+          }, delay);
         });
       } catch (error) {
         // Storage can be unavailable in privacy-restricted browser contexts.
@@ -26,7 +29,9 @@
 
     if (document.documentElement.dataset.auditHistoryBound !== "true") {
       document.documentElement.dataset.auditHistoryBound = "true";
-      window.addEventListener("popstate", restorePosition);
+      window.addEventListener("popstate", () => {
+        [0, 100, 300, 700].forEach((delay) => window.setTimeout(restorePosition, delay));
+      });
       window.addEventListener("pageshow", (event) => {
         if (event.persisted) restorePosition();
       });
@@ -35,13 +40,16 @@
     document.querySelectorAll("a[href]").forEach((link) => {
       if (link.dataset.auditScrollBound === "true") return;
       const url = new URL(link.href, window.location.href);
-      const isInternalPage = url.origin === window.location.origin &&
-        url.pathname !== window.location.pathname && !url.hash;
-      if (!isInternalPage) return;
+      const leavesHomeForProject = url.origin === window.location.origin &&
+        window.location.pathname === "/" && url.pathname.startsWith("/projects/");
+      if (!leavesHomeForProject) return;
       link.dataset.auditScrollBound = "true";
       link.addEventListener("click", () => {
         try {
-          sessionStorage.setItem(storageKey, String(Math.round(window.scrollY)));
+          sessionStorage.setItem(storageKey, JSON.stringify({
+            pathname: window.location.pathname,
+            scrollY: Math.round(window.scrollY),
+          }));
         } catch (error) {
           // Storage can be unavailable in privacy-restricted browser contexts.
         }
@@ -49,8 +57,7 @@
     });
 
     try {
-      const navigation = performance.getEntriesByType("navigation")[0];
-      if (navigation?.type === "back_forward") restorePosition();
+      restorePosition();
     } catch (error) {
       // Ignore unavailable navigation or session storage APIs.
     }
