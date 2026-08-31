@@ -7,6 +7,55 @@
     document.documentElement.classList.remove("audit-initial-paint");
   };
 
+  const preserveProjectReturnPosition = () => {
+    const storageKey = "audit-return-scroll:" + window.location.pathname;
+    const restorePosition = () => {
+      try {
+        const currentKey = "audit-return-scroll:" + window.location.pathname;
+        const saved = sessionStorage.getItem(currentKey);
+        if (saved === null) return;
+        const position = Number(saved);
+        if (!Number.isFinite(position)) return;
+        window.requestAnimationFrame(() => {
+          window.setTimeout(() => window.scrollTo({ top: position, behavior: "instant" }), 50);
+        });
+      } catch (error) {
+        // Storage can be unavailable in privacy-restricted browser contexts.
+      }
+    };
+
+    if (document.documentElement.dataset.auditHistoryBound !== "true") {
+      document.documentElement.dataset.auditHistoryBound = "true";
+      window.addEventListener("popstate", restorePosition);
+      window.addEventListener("pageshow", (event) => {
+        if (event.persisted) restorePosition();
+      });
+    }
+
+    document.querySelectorAll("a[href]").forEach((link) => {
+      if (link.dataset.auditScrollBound === "true") return;
+      const url = new URL(link.href, window.location.href);
+      const isInternalPage = url.origin === window.location.origin &&
+        url.pathname !== window.location.pathname && !url.hash;
+      if (!isInternalPage) return;
+      link.dataset.auditScrollBound = "true";
+      link.addEventListener("click", () => {
+        try {
+          sessionStorage.setItem(storageKey, String(Math.round(window.scrollY)));
+        } catch (error) {
+          // Storage can be unavailable in privacy-restricted browser contexts.
+        }
+      }, { passive: true });
+    });
+
+    try {
+      const navigation = performance.getEntriesByType("navigation")[0];
+      if (navigation?.type === "back_forward") restorePosition();
+    } catch (error) {
+      // Ignore unavailable navigation or session storage APIs.
+    }
+  };
+
   ["pointerdown", "touchstart", "keydown", "wheel"].forEach((eventName) => {
     window.addEventListener(eventName, releaseInitialPaint, { once: true, passive: true });
   });
@@ -52,6 +101,19 @@
     document.querySelectorAll('[aria-label="Guided Line Container"]').forEach((element) => {
       element.removeAttribute("aria-label");
       element.setAttribute("aria-hidden", "true");
+    });
+
+    document.querySelectorAll('[data-framer-name="Desktop - Close"],[data-framer-name="Desktop - Open"]').forEach((element) => {
+      element.setAttribute("role", "button");
+      element.setAttribute("aria-expanded", element.getAttribute("data-framer-name") === "Desktop - Open" ? "true" : "false");
+      if (!element.getAttribute("aria-label")) element.setAttribute("aria-label", "Toggle FAQ answer");
+    });
+
+    document.querySelectorAll('[data-framer-name="Desktop"][tabindex="0"]').forEach((element) => {
+      if ((element.textContent || "").includes("Click to see my bio")) {
+        element.setAttribute("role", "button");
+        element.setAttribute("aria-label", "Open biography");
+      }
     });
   };
 
@@ -210,6 +272,7 @@
     normalizeHeadings();
     normalizeCopy();
     normalizeSeo();
+    preserveProjectReturnPosition();
   };
 
   let rerunTimer = null;
