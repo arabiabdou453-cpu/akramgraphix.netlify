@@ -1,0 +1,109 @@
+/* Accessibility, performance, and responsive fixes for the exported site. */
+
+/* Reveal the first portfolio slide immediately; Framer interaction resumes on first input. */
+html.audit-initial-paint .framer-1ejthh2-container,
+html.audit-initial-paint .framer-Ltxjk .framer-2z2pdt-container > section {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html.audit-initial-paint .framer-Ltxjk ul > li:first-child > div {
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: none !important;
+}
+
+/* Remove the platform badge from every exported page. */
+#__framer-badge-container,
+.__framer-badge {
+  display: none !important;
+}
+
+.audit-hidden-load-more {
+  display: none !important;
+}
+
+/* Keep the fixed navigation from covering the last content on small screens. */
+@media (max-width: 809.98px) {
+  .framer-190ucxe-container,
+  [data-framer-name="Guided Line Container"] {
+    display: none !important;
+  }
+
+  footer {
+    padding-bottom: 150px !important;
+  }
+}
+
+/* Text remains readable when a placeholder is the only visible hint. */
+input::placeholder,
+textarea::placeholder {
+  color: #707070 !important;
+  opacity: 1;
+}
+
+:focus-visible {
+  outline: 3px solid #075056 !important;
+  outline-offset: 3px !important;
+}
+
+:target,
+:focus {
+  scroll-margin-top: 24px;
+  scroll-margin-bottom: 120px;
+}
+
+.audit-skip-link {
+  position: fixed;
+  z-index: 2147483647;
+  top: 12px;
+  left: 12px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  background: #075056;
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 150ms ease;
+}
+
+.audit-skip-link:focus {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Visually hidden labels remain available to assistive technology. */
+.audit-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+@media (max-width: 809.98px) {
+  a[href^="mailto:"] {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  a[href^="mailto:"] .framer-text {
+    font-size: clamp(18px, 5.8vw, 26px) !important;
+    line-height: 1.15 !important;
+  }
+}
