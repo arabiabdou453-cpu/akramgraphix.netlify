@@ -186,6 +186,52 @@
     });
   };
 
+  const ensureProjectImagesLoad = () => {
+    if (!window.location.pathname.includes("/projects/")) return;
+
+    const selectResponsiveSource = (image) => {
+      const candidates = (image.getAttribute("srcset") || "")
+        .split(",")
+        .map((candidate) => {
+          const match = candidate.trim().match(/^(.*)\s+(\d+)w$/u);
+          return match ? { url: match[1], width: Number(match[2]) } : null;
+        })
+        .filter((candidate) => candidate !== null)
+        .sort((first, second) => first.width - second.width);
+      const requiredWidth = Math.max(
+        320,
+        Math.ceil(image.getBoundingClientRect().width * window.devicePixelRatio),
+      );
+      const candidate = candidates.find((item) => item.width >= requiredWidth) || candidates.at(-1);
+      return candidate?.url || image.getAttribute("src") || "";
+    };
+
+    const forceSource = (image) => {
+      if (image.currentSrc && image.naturalWidth > 0) return;
+      const source = selectResponsiveSource(image);
+      if (!source) return;
+      image.removeAttribute("srcset");
+      image.removeAttribute("sizes");
+      image.src = source;
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const image = entry.target;
+        window.setTimeout(() => forceSource(image), 100);
+        observer.unobserve(image);
+      });
+    }, { rootMargin: "1200px 0px" });
+
+    document.querySelectorAll("img").forEach((image) => {
+      if (image.dataset.auditProjectImageBound === "true") return;
+      image.dataset.auditProjectImageBound = "true";
+      image.addEventListener("error", () => forceSource(image), { once: true });
+      observer.observe(image);
+    });
+  };
+
   const hideEmptyLoadMore = () => {
     const button = [...document.querySelectorAll("button")].find(
       (candidate) => (candidate.textContent || "").trim() === "Load More",
@@ -297,6 +343,7 @@
     addAccessibleNames();
     addSkipLink();
     improveImages();
+    ensureProjectImagesLoad();
     hideEmptyLoadMore();
     normalizeHeadings();
     normalizeCopy();
