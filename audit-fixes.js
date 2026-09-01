@@ -15,12 +15,22 @@
         if (raw === null) return;
         const saved = JSON.parse(raw);
         if (saved.pathname !== window.location.pathname || !Number.isFinite(saved.scrollY)) return;
+        if (document.documentElement.dataset.auditScrollRestoreActive === "true") return;
 
-        [0, 100, 300, 700, 1200].forEach((delay, index, delays) => {
-          window.setTimeout(() => {
-            window.scrollTo({ top: saved.scrollY, behavior: "instant" });
-            if (index === delays.length - 1) sessionStorage.removeItem(storageKey);
-          }, delay);
+        document.documentElement.dataset.auditScrollRestoreActive = "true";
+        const finishRestore = () => {
+          window.clearInterval(restoreInterval);
+          delete document.documentElement.dataset.auditScrollRestoreActive;
+          sessionStorage.removeItem(storageKey);
+        };
+        const restoreInterval = window.setInterval(() => {
+          window.scrollTo({ top: saved.scrollY, behavior: "auto" });
+        }, 100);
+
+        window.scrollTo({ top: saved.scrollY, behavior: "auto" });
+        window.setTimeout(finishRestore, 6500);
+        ["pointerdown", "touchstart", "wheel", "keydown"].forEach((eventName) => {
+          window.addEventListener(eventName, finishRestore, { once: true, passive: true });
         });
       } catch (error) {
         // Storage can be unavailable in privacy-restricted browser contexts.
@@ -142,6 +152,16 @@
   const improveImages = () => {
     const images = [...document.images];
     let priorityImageAssigned = false;
+    const projectLabels = {
+      "avure-skincare": "Avure Skincare",
+      "formura-labs-full-branding": "Formura Labs",
+      "logofolio": "LOGOFOLIO",
+      "perfumes-media-posts": "Perfumes",
+      "timeplus": "TimePlus",
+    };
+    const pageSlug = window.location.pathname.includes("/projects/")
+      ? (window.location.pathname.split("/").pop() || "").replace(/\.html$/u, "")
+      : "";
 
     images.forEach((image) => {
       if (!image.dataset.auditOriginalAlt) {
@@ -149,6 +169,18 @@
         const namedParent = image.closest("[data-framer-name]");
         const fallback = namedParent?.getAttribute("data-framer-name") || "Portfolio image";
         image.dataset.auditOriginalAlt = currentAlt === null ? fallback : currentAlt;
+      }
+
+      const linkedProject = image.closest('a[href*="/projects/"]');
+      const linkedSlug = linkedProject
+        ? (new URL(linkedProject.href, window.location.href).pathname.split("/").pop() || "").replace(/\.html$/u, "")
+        : "";
+      const semanticProject = projectLabels[linkedSlug] || projectLabels[pageSlug] || "";
+      const templateAlt = /^(Growly|Sienna|Portfolio project)\b/iu.test(image.dataset.auditOriginalAlt);
+      if (semanticProject && templateAlt) {
+        image.dataset.auditOriginalAlt = image.dataset.auditOriginalAlt.toLowerCase().includes("logo")
+          ? `${semanticProject} logo`
+          : `${semanticProject} project artwork`;
       }
 
       const decorative = image.dataset.auditOriginalAlt.toLowerCase().includes("background");
@@ -279,7 +311,7 @@
   };
 
   const normalizeCopy = () => {
-    document.querySelectorAll("p, div, span").forEach((element) => {
+    document.querySelectorAll("p, div, span, h1, h2, h3, h4, h5, h6").forEach((element) => {
       if (element.children.length > 0) return;
       const text = (element.textContent || "").trim();
       if (text.includes("Join 100+ professionals")) {
@@ -290,6 +322,9 @@
       }
       if (text === "Click to see my bio") {
         element.textContent = "View my work below";
+      }
+      if (text.includes("Formura Labs | Full Branding Copy")) {
+        element.textContent = text.replace("Formura Labs | Full Branding Copy", "Formura Labs | Full Branding");
       }
     });
   };
