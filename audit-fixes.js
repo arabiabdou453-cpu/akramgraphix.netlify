@@ -455,7 +455,6 @@
   const startAfterHydration = () => {
     window.setTimeout(() => {
       init();
-      const root = document.querySelector("#main") || document.body;
       const observer = new MutationObserver((mutations) => {
         const structureChanged = mutations.some(
           (mutation) =>
@@ -464,12 +463,21 @@
         );
         if (structureChanged) scheduleInit();
       });
-      observer.observe(root, {
+      observer.observe(document.body, {
         childList: true,
         subtree: true,
         attributes: true,
         attributeFilter: ["data-framer-name"],
       });
+      if (document.documentElement.dataset.auditRouteMonitorBound !== "true") {
+        document.documentElement.dataset.auditRouteMonitorBound = "true";
+        let lastObservedUrl = window.location.href;
+        window.setInterval(() => {
+          if (window.location.href === lastObservedUrl) return;
+          lastObservedUrl = window.location.href;
+          [0, 250, 800, 1800].forEach((delay) => window.setTimeout(init, delay));
+        }, 100);
+      }
       window.addEventListener("resize", scheduleInit, { passive: true });
       window.setTimeout(init, 3500);
     }, 1500);
