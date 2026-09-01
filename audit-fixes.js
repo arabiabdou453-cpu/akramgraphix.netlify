@@ -250,22 +250,21 @@
   const ensureProjectImagesLoad = () => {
     if (!window.location.pathname.includes("/projects/")) return;
 
-    const localProjectAssets = new Set(["logofolio", "perfumes-media-posts", "timeplus"]);
     const projectSlug = (window.location.pathname.split("/").pop() || "").replace(/\.html$/u, "");
-    const projectLabels = {
-      "logofolio": "LOGOFOLIO",
-      "perfumes-media-posts": "Perfumes",
-      "timeplus": "TimePlus",
+    const localProjectAssets = {
+      "logofolio": { folder: "logofolio", label: "LOGOFOLIO" },
+      "perfumes-media-posts": { folder: "perfumes", label: "Perfumes" },
+      "timeplus": { folder: "timeplus", label: "TimePlus" },
     };
     const replaceKnownProjectImages = () => {
-      if (!localProjectAssets.has(projectSlug)) return;
-      const projectLabel = projectLabels[projectSlug];
+      const projectAssets = localProjectAssets[projectSlug];
+      if (!projectAssets) return;
       const artworkImages = [...document.images]
-        .filter((image) => image.alt === `${projectLabel} project artwork`)
+        .filter((image) => image.alt === `${projectAssets.label} project artwork`)
         .slice(0, 5);
       artworkImages.forEach((image, index) => {
         const localSource = new URL(
-          `../images/${projectSlug}/${String(index + 1).padStart(2, "0")}.webp`,
+          `../images/${projectAssets.folder}/${String(index + 1).padStart(2, "0")}.webp`,
           window.location.href,
         ).href;
         if (image.currentSrc === localSource || image.src === localSource) return;
