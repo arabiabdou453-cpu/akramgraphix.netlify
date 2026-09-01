@@ -9,12 +9,15 @@
 
   const preserveProjectReturnPosition = () => {
     const storageKey = "audit-project-return-position";
+    const phaseKey = `${storageKey}-phase`;
+    const currentPathIsProject = () => window.location.pathname.startsWith("/projects/");
     const restorePosition = () => {
       try {
         const raw = sessionStorage.getItem(storageKey);
         if (raw === null) return;
         const saved = JSON.parse(raw);
         if (saved.pathname !== window.location.pathname || !Number.isFinite(saved.scrollY)) return;
+        if (sessionStorage.getItem(phaseKey) !== "project") return;
         if (document.documentElement.dataset.auditScrollRestoreActive === "true") return;
 
         document.documentElement.dataset.auditScrollRestoreActive = "true";
@@ -22,6 +25,7 @@
           window.clearInterval(restoreInterval);
           delete document.documentElement.dataset.auditScrollRestoreActive;
           sessionStorage.removeItem(storageKey);
+          sessionStorage.removeItem(phaseKey);
         };
         const restoreInterval = window.setInterval(() => {
           window.scrollTo({ top: saved.scrollY, behavior: "auto" });
@@ -47,6 +51,30 @@
       });
     }
 
+    if (currentPathIsProject()) {
+      try {
+        if (sessionStorage.getItem(storageKey) !== null) sessionStorage.setItem(phaseKey, "project");
+      } catch (error) {
+        // Storage can be unavailable in privacy-restricted browser contexts.
+      }
+    }
+
+    if (document.documentElement.dataset.auditReturnMonitorBound !== "true") {
+      document.documentElement.dataset.auditReturnMonitorBound = "true";
+      window.setInterval(() => {
+        try {
+          const phase = sessionStorage.getItem(phaseKey);
+          if (currentPathIsProject() && phase === "leaving") {
+            sessionStorage.setItem(phaseKey, "project");
+          } else if (!currentPathIsProject() && phase === "project") {
+            restorePosition();
+          }
+        } catch (error) {
+          // Storage can be unavailable in privacy-restricted browser contexts.
+        }
+      }, 250);
+    }
+
     document.querySelectorAll("a[href]").forEach((link) => {
       if (link.dataset.auditScrollBound === "true") return;
       const url = new URL(link.href, window.location.href);
@@ -60,6 +88,7 @@
             pathname: window.location.pathname,
             scrollY: Math.round(window.scrollY),
           }));
+          sessionStorage.setItem(phaseKey, "leaving");
         } catch (error) {
           // Storage can be unavailable in privacy-restricted browser contexts.
         }
@@ -220,6 +249,33 @@
 
   const ensureProjectImagesLoad = () => {
     if (!window.location.pathname.includes("/projects/")) return;
+
+    const localProjectAssets = new Set(["logofolio", "perfumes-media-posts", "timeplus"]);
+    const projectSlug = (window.location.pathname.split("/").pop() || "").replace(/\.html$/u, "");
+    const projectLabels = {
+      "logofolio": "LOGOFOLIO",
+      "perfumes-media-posts": "Perfumes",
+      "timeplus": "TimePlus",
+    };
+    const replaceKnownProjectImages = () => {
+      if (!localProjectAssets.has(projectSlug)) return;
+      const projectLabel = projectLabels[projectSlug];
+      const artworkImages = [...document.images]
+        .filter((image) => image.alt === `${projectLabel} project artwork`)
+        .slice(0, 5);
+      artworkImages.forEach((image, index) => {
+        const localSource = new URL(
+          `../images/${projectSlug}/${String(index + 1).padStart(2, "0")}.webp`,
+          window.location.href,
+        ).href;
+        if (image.currentSrc === localSource || image.src === localSource) return;
+        image.removeAttribute("srcset");
+        image.removeAttribute("sizes");
+        image.src = localSource;
+      });
+    };
+
+    replaceKnownProjectImages();
 
     const selectResponsiveSource = (image) => {
       const candidates = (image.getAttribute("srcset") || "")
