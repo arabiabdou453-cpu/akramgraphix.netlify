@@ -157,11 +157,12 @@
       element.setAttribute("aria-label", (question.textContent || "Toggle FAQ answer").trim());
     });
 
+    // The profile card opens the bio overlay on click/tap (Framer Overlay), so expose it as a button.
     document.querySelectorAll('[data-framer-name][tabindex="0"]').forEach((element) => {
       if ((element.textContent || "").includes("Click to see my bio")) {
-        element.removeAttribute("role");
-        element.removeAttribute("aria-label");
-        element.removeAttribute("tabindex");
+        element.setAttribute("role", "button");
+        element.setAttribute("aria-haspopup", "dialog");
+        element.setAttribute("aria-label", "Open Akram Wanisse Marref's bio");
       }
     });
   };
@@ -201,6 +202,12 @@
     const pageSlug = window.location.pathname.includes("/projects/")
       ? (window.location.pathname.split("/").pop() || "").replace(/\.html$/u, "")
       : "";
+    const heroAlt = "Restaurant poster designs by Akram Marref";
+    // Template leftovers that Framer re-applies after hydration.
+    const renamedAlts = {
+      "Jax": "Akram Wanisse Marref",
+      "LensRef Hero section": heroAlt,
+    };
 
     images.forEach((image) => {
       if (!image.dataset.auditOriginalAlt) {
@@ -209,6 +216,7 @@
         const fallback = namedParent?.getAttribute("data-framer-name") || "Portfolio image";
         image.dataset.auditOriginalAlt = currentAlt === null ? fallback : currentAlt;
       }
+      image.dataset.auditOriginalAlt = renamedAlts[image.dataset.auditOriginalAlt] || image.dataset.auditOriginalAlt;
 
       const linkedProject = image.closest('a[href*="/projects/"]');
       const linkedSlug = linkedProject
@@ -243,7 +251,7 @@
 
       if (nearInitialViewport) {
         image.loading = "eager";
-        const isPrimaryProjectImage = image.alt === "LensRef Hero section";
+        const isPrimaryProjectImage = image.alt === heroAlt;
         if (isPrimaryProjectImage || (!priorityImageAssigned && rect.width >= 250 && rect.height >= 180)) {
           image.setAttribute("fetchpriority", "high");
           priorityImageAssigned = true;
@@ -375,9 +383,6 @@
       if (text.includes("Copyright 2025")) {
         element.textContent = text.replace("Copyright 2025", "Copyright 2026");
       }
-      if (text === "Click to see my bio") {
-        element.textContent = "View my work below";
-      }
       if (text.includes("Formura Labs | Full Branding Copy")) {
         element.textContent = text.replace("Formura Labs | Full Branding Copy", "Formura Labs | Full Branding");
       }
@@ -452,7 +457,10 @@
     };
     const page = (window.location.pathname.split("/").pop() || "index").replace(/\.html$/u, "");
     const home = page === "" || page === "index";
-    const [title, description] = home
+    const notFound = (document.body.textContent || "").includes("The page you are looking for could not be found");
+    const [title, description] = notFound
+      ? ["Page not found | Akram Marref", ""]
+      : home
       ? [
           "Art Director & Graphic Designer in Doha | Akram Marref",
           "Akram Wanisse Marref is a Doha-based art director and senior graphic designer creating brand identities, visual systems, websites, apps, and campaigns.",
