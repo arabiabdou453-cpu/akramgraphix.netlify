@@ -105,6 +105,7 @@ Contact       →  email, phone and professional social channels
 ```text
 akramgraphix.netlify/
 ├── index.html                                            # Portfolio markup and content
+├── 404.html                                              # Custom page-not-found screen
 ├── projects/
 │   ├── avure-skincare.html                               # Avure Skincare case study
 │   ├── bulakasfalo-restaurant-logo-branding-design.html  # Bulakasfalo Restaurant identity
