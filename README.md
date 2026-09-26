@@ -104,23 +104,33 @@ Contact       →  email, phone and professional social channels
 
 ```text
 akramgraphix.netlify/
-├── index.html                          # Portfolio markup and content
+├── index.html                                            # Portfolio markup and content
 ├── projects/
-│   ├── avure-skincare.html             # Avure Skincare case study
-│   ├── formura-labs-full-branding.html # Formura Labs case study
-│   ├── logofolio.html                  # Logo and marks collection
-│   ├── perfumes-media-posts.html       # Perfume campaign case study
-│   └── timeplus.html                   # TimePlus identity case study
+│   ├── avure-skincare.html                               # Avure Skincare case study
+│   ├── bulakasfalo-restaurant-logo-branding-design.html  # Bulakasfalo Restaurant identity
+│   ├── carossa.html                                      # Carossa brand identity
+│   ├── carossa-startup-mobile-app-ui-ux-design.html      # Carossa mobile app UI/UX
+│   ├── formura-labs-full-branding.html                   # Formura Labs case study
+│   ├── lamaat-fun-logo-brand-identity-design.html        # Lamaat Fun identity
+│   ├── logofolio.html                                    # Logo and marks collection
+│   ├── perfumes-media-posts.html                         # Perfume campaign case study
+│   ├── precious-kitchen-logo-branding-design.html        # Precious Kitchen identity
+│   ├── soundcloud-website-ui-ux-re-design.html           # SoundCloud website redesign
+│   ├── suntwin.html                                      # SunTwin Analytics identity
+│   ├── timeplus.html                                     # TimePlus identity case study
+│   ├── vectorial-studio.html                             # Vectorial Agency re-branding
+│   ├── zr-express.html                                   # ZR Express mobile app case study
+│   └── zr-express-re-branding.html                       # ZR Express re-branding
 ├── images/
-│   ├── logofolio/                      # LOGOFOLIO project artwork
-│   ├── perfumes/                       # Perfumes project artwork
-│   └── timeplus/                       # TimePlus project artwork
-├── audit-fixes.js                      # Navigation, accessibility and UX behavior
-├── audit-fixes.css                     # Responsive and interface refinements
-├── _headers                            # Security and caching headers
-├── _redirects                          # Clean project URL routing
-├── sitemap.xml                         # Search-engine route index
-└── robots.txt                          # Crawler guidance
+│   ├── logofolio/                                        # LOGOFOLIO project artwork
+│   ├── perfumes/                                         # Perfumes project artwork
+│   └── timeplus/                                         # TimePlus project artwork
+├── audit-fixes.js                                        # Navigation, accessibility and UX behavior
+├── audit-fixes.css                                       # Responsive and interface refinements
+├── _headers                                              # Security and caching headers
+├── _redirects                                            # Clean project URL routing
+├── sitemap.xml                                           # Search-engine route index
+└── robots.txt                                            # Crawler guidance
 ```
 
 ## 🚀 Run locally

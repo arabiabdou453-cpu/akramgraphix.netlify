@@ -19,10 +19,6 @@ html.audit-initial-paint .framer-Ltxjk ul > li:first-child > div {
   display: none !important;
 }
 
-.audit-hidden-load-more {
-  display: none !important;
-}
-
 /* Keep the fixed navigation from covering the last content on small screens. */
 @media (max-width: 809.98px) {
   .framer-190ucxe-container,
