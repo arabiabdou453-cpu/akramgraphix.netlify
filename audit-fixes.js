@@ -187,6 +187,16 @@
       "logofolio": "LOGOFOLIO",
       "perfumes-media-posts": "Perfumes",
       "timeplus": "TimePlus",
+      "carossa": "Carossa",
+      "suntwin": "SunTwin Analytics",
+      "vectorial-studio": "Vectorial Agency",
+      "zr-express": "ZR Express",
+      "bulakasfalo-restaurant-logo-branding-design": "Bulakasfalo Restaurant",
+      "precious-kitchen-logo-branding-design": "Precious Kitchen",
+      "zr-express-re-branding": "ZR Express",
+      "lamaat-fun-logo-brand-identity-design": "Lamaat Fun",
+      "soundcloud-website-ui-ux-re-design": "SoundCloud",
+      "carossa-startup-mobile-app-ui-ux-design": "Carossa",
     };
     const pageSlug = window.location.pathname.includes("/projects/")
       ? (window.location.pathname.split("/").pop() || "").replace(/\.html$/u, "")
@@ -205,7 +215,7 @@
         ? (new URL(linkedProject.href, window.location.href).pathname.split("/").pop() || "").replace(/\.html$/u, "")
         : "";
       const semanticProject = projectLabels[linkedSlug] || projectLabels[pageSlug] || "";
-      const templateAlt = /^(Growly|Sienna|Portfolio project)\b/iu.test(image.dataset.auditOriginalAlt);
+      const templateAlt = /^(Growly|Sienna|Aether Studio|Glidex|VaultX|Portfolio project)\b/iu.test(image.dataset.auditOriginalAlt);
       if (semanticProject && templateAlt) {
         image.dataset.auditOriginalAlt = image.dataset.auditOriginalAlt.toLowerCase().includes("logo")
           ? `${semanticProject} logo`
@@ -319,16 +329,6 @@
     });
   };
 
-  const hideEmptyLoadMore = () => {
-    const button = [...document.querySelectorAll("button")].find(
-      (candidate) => (candidate.textContent || "").trim() === "Load More",
-    );
-    if (!button) return;
-    button.hidden = true;
-    button.setAttribute("aria-hidden", "true");
-    button.classList.add("audit-hidden-load-more");
-  };
-
   const normalizeHeadings = () => {
     const projectPage = window.location.pathname.includes("/projects/");
     if (projectPage && !document.querySelector(".audit-project-h1")) {
@@ -381,6 +381,9 @@
       if (text.includes("Formura Labs | Full Branding Copy")) {
         element.textContent = text.replace("Formura Labs | Full Branding Copy", "Formura Labs | Full Branding");
       }
+      if (text.includes("Vectorial Agnecy")) {
+        element.textContent = text.replace("Vectorial Agnecy", "Vectorial Agency");
+      }
     });
   };
 
@@ -406,6 +409,46 @@
         "TimePlus | Logo & Visual Identity | Akram Marref",
         "Logo and visual identity design for TimePlus, creating a streamlined and trustworthy presence for a modern HR and payroll platform.",
       ],
+      "carossa": [
+        "Carossa Startup | Logo & Brand Identity Design | Akram Marref",
+        "A fresh visual direction for Algeria’s emerging car marketplace",
+      ],
+      "suntwin": [
+        "SunTwin Analytics | Logo & Brand Identity Design | Akram Marref",
+        "A clean visual system for a solar tech startup",
+      ],
+      "vectorial-studio": [
+        "Vectorial Agency Re-Branding | Akram Marref",
+        "A bold transformation for a global creative studio",
+      ],
+      "zr-express": [
+        "ZR Express | Mobile App Case Study | Akram Marref",
+        "A complete brand and UX overhaul for a logistics company",
+      ],
+      "bulakasfalo-restaurant-logo-branding-design": [
+        "Bulakasfalo Restaurant | Logo & Branding Design | Akram Marref",
+        "A playful brand system tailored for a street-food restaurant",
+      ],
+      "precious-kitchen-logo-branding-design": [
+        "Precious Kitchen | Logo & Branding Design | Akram Marref",
+        "A warm, home-style identity reflecting traditional flavors",
+      ],
+      "zr-express-re-branding": [
+        "ZR Express Re-Branding | Akram Marref",
+        "A bold identity revamp built for speed, trust, and modern logistics.",
+      ],
+      "lamaat-fun-logo-brand-identity-design": [
+        "Lamaat Fun | Logo & Brand Identity Design | Akram Marref",
+        "A sleek and dynamic identity for a modern car detailing brand",
+      ],
+      "soundcloud-website-ui-ux-re-design": [
+        "SoundCloud Website UI/UX Re-Design | Akram Marref",
+        "A cleaner, more intuitive design for a global music platform",
+      ],
+      "carossa-startup-mobile-app-ui-ux-design": [
+        "Carossa Startup | Mobile App UI/UX Design | Akram Marref",
+        "A fresh visual direction for Algeria’s emerging car marketplace",
+      ],
     };
     const page = (window.location.pathname.split("/").pop() || "index").replace(/\.html$/u, "");
     const home = page === "" || page === "index";
@@ -414,7 +457,7 @@
           "Art Director & Graphic Designer in Doha | Akram Marref",
           "Akram Wanisse Marref is a Doha-based art director and senior graphic designer creating brand identities, visual systems, websites, apps, and campaigns.",
         ]
-      : projectSeo[page] || [document.title, ""];
+      : projectSeo[page] || [document.title.replace(/\s*-\s*Jax Orion$/u, " | Akram Marref"), ""];
     document.title = title;
     const values = [
       ['meta[name="description"]', description],
@@ -434,7 +477,6 @@
     addSkipLink();
     improveImages();
     ensureProjectImagesLoad();
-    hideEmptyLoadMore();
     normalizeHeadings();
     normalizeCopy();
     normalizeSeo();
